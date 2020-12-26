@@ -1,5 +1,5 @@
-function get-WHFBADSchema {
-    $schemaversion = (get-adobject (get-adrootdse).schemaNamingContext -Property objectVersion).objectVersion
+function Get-WHFBADSchema {
+    $schemaversion = (Get-ADObject (Get-ADRootDSE).schemaNamingContext -Property objectVersion).objectVersion
     $SchemaOS = switch ($schemaversion){
         13 {"Windows Server 2000","Unsupported"}
         30 {"Windows Server 2003","Unsupported"}
@@ -11,5 +11,8 @@ function get-WHFBADSchema {
         87 {"Windows Server 2016","Supported"}
         88 {"Windows Server 2019","Supported"}
     }
-    return $SchemaOS
+    return [PSCustomObject]@{
+        OperatingSystem = $SchemaOS[0]
+        Supported       = $schemaOS[-1]
+    }
 }
