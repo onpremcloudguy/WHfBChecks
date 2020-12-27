@@ -7,18 +7,18 @@ function Get-WHFBADSyncAccount {
     )
     $ADSyncUser = $null
     if ($PSBoundParameters.ContainsKey('Computername')) {
-        $ADSyncUser = invoke-command -computername $Computername -scriptblock {
-            $ADSyncConnector = get-adsyncconnector | where-object { $_.type -eq "AD" }
-            $ADSyncUsr = ($ADSyncConnector.ConnectivityParameters | where-object { $_.name -eq "forest-login-user" }).value
-            $ADSyncDomain = ($ADSyncConnector.ConnectivityParameters | where-object { $_.name -eq "forest-login-domain" }).value
-            "$($adsyncdomain)\$($adsyncusr)"
+        $ADSyncUser = Invoke-Command -ComputerName $Computername -ScriptBlock {
+            $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
+            $ADSyncUsr = ($ADSyncConnector.ConnectivityParameters | Where-Object { $_.name -eq "forest-login-user" }).value
+            $ADSyncDomain = ($ADSyncConnector.ConnectivityParameters | Where-Object { $_.name -eq "forest-login-domain" }).value
+            "$($ADSyncDomain)\$($ADSyncUsr)"
         } -Credential (Get-Credential)
     }
     else {
-        $ADSyncConnector = get-adsyncconnector | where-object { $_.type -eq "AD" }
-        $ADSyncUsr = ($ADSyncConnector.ConnectivityParameters | where-object { $_.name -eq "forest-login-user" }).value
-        $ADSyncDomain = ($ADSyncConnector.ConnectivityParameters | where-object { $_.name -eq "forest-login-domain" }).value
-        $ADSyncUser = "$($adsyncdomain)\$($adsyncusr)"
+        $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
+        $ADSyncUsr = ($ADSyncConnector.ConnectivityParameters | Where-Object { $_.name -eq "forest-login-user" }).value
+        $ADSyncDomain = ($ADSyncConnector.ConnectivityParameters | Where-Object { $_.name -eq "forest-login-domain" }).value
+        $ADSyncUser = "$($ADSyncDomain)\$($ADSyncUsr)"
     }
     return $ADSyncUser
 }

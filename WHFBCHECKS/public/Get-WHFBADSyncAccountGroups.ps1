@@ -5,5 +5,5 @@ function Get-WHFBADSyncAccountGroups {
         [string]
         $username
     )
-    Get-ADPrincipalGroupMembership $username | select-object name
+    Get-ADPrincipalGroupMembership $username | Select-Object Name
 }

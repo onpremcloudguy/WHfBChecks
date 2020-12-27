@@ -7,13 +7,13 @@ function Get-WHFBADSyncNGCProp {
     )
     $MSKeyCredExists = $false
     if ($PSBoundParameters.ContainsKey('Computername')) {
-        $MSKeyCredExists = invoke-command -computername $Computername -scriptblock {
-            $ADSyncConnector = get-adsyncconnector | where-object { $_.type -eq "AD" }
+        $MSKeyCredExists = Invoke-Command -ComputerName $Computername -ScriptBlock {
+            $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
             $ADSyncConnector.AttributeInclusionList -contains "msDS-KeyCredentialLink"
         } -Credential (Get-Credential)
     } else
     {
-        $ADSyncConnector = get-adsyncconnector | where-object { $_.type -eq "AD" }
+        $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
         $MSKeyCredExists = $ADSyncConnector.AttributeInclusionList -contains "msDS-KeyCredentialLink"
     }
     return $MSKeyCredExists

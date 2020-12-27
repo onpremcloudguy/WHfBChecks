@@ -1,8 +1,8 @@
 function Get-WHFBADKeyAdminsmembers {
-    $keyadmingrp = get-adgroup -Identity "Key Admins" -ErrorAction SilentlyContinue
-    $keyadmingrpmembers = $null
-    if($keyadmingrp){
-        $keyadmingrpmembers = $keyadmingrp | Get-ADGroupMember
+    $keyAdminGrp = Get-ADGroup -Identity "Key Admins" -ErrorAction SilentlyContinue
+    $keyAdminGrpMembers = $null
+    if($keyAdminGrp){
+        $keyAdminGrpMembers = $keyAdminGrp | Get-ADGroupMember
     }
-    return $keyadmingrpmembers
+    return $keyAdminGrpMembers
 }
