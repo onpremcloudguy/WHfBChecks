@@ -11,3 +11,4 @@ Needs to have the RSAT Active Directory tools enabled.
 - Get-WHFBADSyncNGCSync:        This will check to see if the NGC object is syncing to the MS-KeyCredentialLink property
 - Get-WHFBADSyncNGCProp:        This will check to see if the AAD Connect Schema supports syncing NGC to MS-KeyCredentialLink
 - Get-WHFBADDCs:                This will return all Domain Controllers in the domain, limited to include only name, IP, OS version, FSMO, enabled, and if the DC is supported.
+- get-WHFBCA:                   This will return all CA's registered into Active Directory
