@@ -11,7 +11,9 @@ try {
     #region Generate a new version number
     $moduleName = Split-Path -Path $modulePath -Leaf
     $PreviousVersion = Find-Module -Name $moduleName -ErrorAction SilentlyContinue | Select-Object *
-    [Version]$exVer = $PreviousVersion ? $PreviousVersion.Version : $null
+    [Version]$exVer = if ($PreviousVersion) {
+        $PreviousVersion.Version
+    }
     if ($buildLocal) {
         $rev = ((Get-ChildItem -Path "$PSScriptRoot\bin\release\" -ErrorAction SilentlyContinue).Name | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) + 1
         $newVersion = New-Object -TypeName Version -ArgumentList 1, 0, 0, $rev
