@@ -7,8 +7,8 @@ function Get-WHFBCertCRLDP {
     )
     try {
         $cert = Get-ChildItem $CertPath
-        $crlExt = $cert.Extensions | Where-Object {$_.oid.friendlyName -match 'CRL Distribution Points' }
-        $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.trim().length -gt 1) {$_.trim()} }
+        $crlExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'CRL Distribution Points' }
+        $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
         $res = [PSCustomObject]@{
             DistributionPoints = $decoded 
         } 
