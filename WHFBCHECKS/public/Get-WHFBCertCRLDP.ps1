@@ -3,12 +3,12 @@ function Get-WHFBCertCRLDP {
     param (
         [parameter(Mandatory = $true)]
         [string]
-        $certPath
+        $CertPath
     )
     try {
-        $cert = Get-ChildItem $certPath
+        $cert = Get-ChildItem $CertPath
         $crlExt = $cert.Extensions | Where-Object {$_.oid.friendlyName -match 'CRL Distribution Points' }
-        $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | % { if ($_.trim().length -gt 1) {$_.trim()} }
+        $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.trim().length -gt 1) {$_.trim()} }
         $res = [PSCustomObject]@{
             DistributionPoints = $decoded 
         } 
