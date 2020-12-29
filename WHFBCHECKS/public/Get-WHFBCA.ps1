@@ -8,7 +8,7 @@ function get-WHFBCA {
                 Name    = $c.cn
                 SVRName = $c.children.cn[0]
             }
-            $res.Add($caa)
+            $res.Add($caa) | out-null
         }
     }
     else {
