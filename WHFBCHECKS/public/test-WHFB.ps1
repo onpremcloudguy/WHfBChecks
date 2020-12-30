@@ -33,11 +33,11 @@ function Test-WHFB {
     $DCS = Get-WHFBADDCs
     $DCCerts = [System.Collections.ArrayList]::new()
     foreach ($DC in $DCS) {
-        if ([decimal]$dcs.OperatingSystemVersion.split(" ")[0] -ge 6.1) {
+        if ([decimal]$dcs.OperatingSystemVersion.split(" ")[0] -eq 10.0) {
             write-host "Domain Controller $($dc.hostname) is supported" -Foregroundcolor Green
         }
         else {
-            write-host "Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2008 R2 or Higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory"
+            write-host "Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers"
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $creds
         $DCCerts.add($DCCert)
