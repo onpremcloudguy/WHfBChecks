@@ -13,6 +13,6 @@ function Get-WHFBADSchema {
     }
     return [PSCustomObject]@{
         OperatingSystem = $schemaOS[0]
-        Supported       = $schemaOS[-1]
+        Supported       = $schemaOS[1]
     }
 }
