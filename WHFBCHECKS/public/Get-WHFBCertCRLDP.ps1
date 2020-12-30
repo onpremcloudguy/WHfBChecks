@@ -6,8 +6,16 @@ function Get-WHFBCertCRLDP {
         $CertPath,
         [Parameter()]
         [string]
-        $Computername
+        $Computername,
+        [Parameter(Mandatory=$false)]
+        [pscredential]
+        $Creds
     )
+    if ($PSBoundParameters.ContainsKey('Creds')){
+        $cred = $creds 
+    } else {
+        $cred = Get-Credential
+    }
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
@@ -17,7 +25,7 @@ function Get-WHFBCertCRLDP {
                 $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
                 [PSCustomObject]@{
                     DistributionPoints = $decoded 
-                } } -Credential (Get-Credential)
+                } } -Credential $cred
         }
         else {
             $cert = Get-ChildItem $CertPath
