@@ -17,27 +17,28 @@ function Test-WHFB {
         Write-host "AD Schema $($ADSchema.OperatingSystem) is supported" -Foregroundcolor Green
     }
     else {
-        Write-host "AD Schema $($ADSchema.OperatingSystem) is Not Supported, needs to be Server 2016 or higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-trust-prereqs#directories" -Foregroundcolor Red
+        Write-host "AD Schema $($ADSchema.OperatingSystem) is Not Supported, needs to be Server 2016 or higher`n`rmore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-trust-prereqs#directories`n`rHow to Update: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd464018(v=ws.10)" -Foregroundcolor Red
     }
     $ADFunctionalLevel = Get-WHFBADFunctionalLevel
     if($ADFunctionalLevel.Domain[1] -eq "Supported"){
         Write-Host "AD Domain functional level $($ADFunctionalLevel.domain[0]) is fully Supported" -Foregroundcolor Green
     } else {
-        Write-Host "AD Domain functional level $($ADFunctionalLevel.domain[0]) is NOT Supported, needs to be Windows 2008 R2 or Higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Red
+        Write-Host "AD Domain functional level $($ADFunctionalLevel.domain[0]) is NOT Supported, needs to be Windows 2008 R2 or Higher`n`rmore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Red #TODO: create a quick user guide to update domain functional level
     }
     if($ADFunctionalLevel.Forest[1] -eq "Supported"){
         Write-Host "AD Forest functional level $($ADFunctionalLevel.Forest[0]) is fully Supported" -Foregroundcolor Green
     } else {
-        Write-Host "AD Forest functional level $($ADFunctionalLevel.Forest[0]) is NOT Supported, needs to be Windows 2008 R2 or Higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Red
+        Write-Host "AD Forest functional level $($ADFunctionalLevel.Forest[0]) is NOT Supported, needs to be Windows 2008 R2 or Higher`n`rmore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Red #TODO: create a quick user guide to update forest functional level
     }
     $DCS = Get-WHFBADDCs
     $DCCerts = [System.Collections.ArrayList]::new()
     foreach ($DC in $DCS) {
-        if ([decimal]$dcs.OperatingSystemVersion.split(" ")[0] -eq 10.0) {
+        $dc.OperatingSystemVersion.split(" ")[0]
+        if ([decimal]$dc.OperatingSystemVersion.split(" ")[0] -eq 10.0) {
             write-host "Domain Controller $($dc.hostname) is supported" -Foregroundcolor Green
         }
         else {
-            write-host "Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher, more information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers"
+            write-host "Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher`n`rmore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers" -ForegroundColor Red
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $creds
         $DCCerts.add($DCCert)
