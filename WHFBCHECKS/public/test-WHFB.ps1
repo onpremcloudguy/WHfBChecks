@@ -3,7 +3,10 @@ function Test-WHFB {
     param (
         [Parameter(Mandatory = $false)]
         [PSCredential]
-        $Creds
+        $Creds,
+        [Parameter(Mandatory=$false)]
+        [String]
+        $AADConnectSvrName
     )
     if ($PSBoundParameters.ContainsKey('Creds')) {
         [PSCredential]$cred = $creds
@@ -43,7 +46,13 @@ function Test-WHFB {
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $creds
         $DCCerts.add($DCCert)
     }
-
-    return $ADSchema
+    $KeyAdmins = get-whfbadkeyadmins #need to then link this to AAD Connect
+    #API endpoint for AADConnect servername https://management.azure.com/providers/Microsoft.ADHybridHealthService/services/AadSyncService-whfb2k8.onmicrosoft.com/servicemembers?api-version=2014-01-01
+    #return $ADSchema
     #endregion
+
+    #Region AADConnect
+    $AADConnectSettings = Get-WHFBAADConnectSettings
+    
+    #EndRegion
 }
