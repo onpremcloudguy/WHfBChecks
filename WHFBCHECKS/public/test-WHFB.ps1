@@ -52,7 +52,18 @@ function Test-WHFB {
     #endregion
 
     #Region AADConnect
+    $AADConnectReleases = Get-WHFBAACCurrentVersion
     $AADConnectSettings = Get-WHFBAADConnectSettings
-    
+    if($null -eq $AADConnectSettings.AADConnectServerName) {
+        Write-Host "AAD Connect isn't configured for $($AADConnectSettings.AADTenant)`n`rmore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-dirsync" -ForegroundColor Red
+    } else {
+        if($AADConnectSettings.LastDirSyncTime -lt (get-date).adddays(-1)) {
+            Write-Host "AAD Connect last synchronized: $($AADConnectSettings.LastDirSyncTime) which is more then 24 hours ago`n`rmore information start here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/tshoot-connect-connectivity" -ForegroundColor Red
+        } else {
+            #connect to AAD Connect Servers
+            
+        }
+    }
+
     #EndRegion
 }

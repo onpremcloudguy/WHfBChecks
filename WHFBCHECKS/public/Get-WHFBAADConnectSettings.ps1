@@ -2,9 +2,6 @@ function Get-WHFBAADConnectSettings {
     if (!(get-module -ListAvailable MSOnline)) {
         install-module MSOnline
     }
-    else {
-        update-module MSOnline
-    }
     import-module MSOnline
     $module = Get-Module MSOnline
     add-type -path "$($module.ModuleBase)\Microsoft.IdentityModel.Clients.ActiveDirectory.dll"
@@ -17,15 +14,17 @@ function Get-WHFBAADConnectSettings {
             }
         }
     }
-    if (!$authed) { 
-        Connect-MsolService 
+    if (!$authed) {
+        Connect-MsolService
     }
-    Get-MsolCompanyInformation | Select-Object @{N='AADConnectServerName'; E={$_.DirSyncClientMachineName}}, 
-    @{N='AADConnectAppType'; E={$_.DirSyncApplicationType}}, 
-    @{N='AADConnectVersion';E={$_.DirSyncClientVersion}}, 
-    @{N='AADConnectAADAccount';E={$_.DirSyncServiceAccount}}, 
-    DirectorySynchronizationEnabled, 
-    DirectorySynchronizationStatus, 
-    PasswordSynchronizationEnabled, 
+    Get-MsolCompanyInformation | Select-Object @{N='AADConnectServerName'; E={$_.DirSyncClientMachineName}},
+    @{N='AADConnectAppType'; E={$_.DirSyncApplicationType}},
+    @{N='AADConnectVersion';E={$_.DirSyncClientVersion}},
+    @{N='AADConnectAADAccount';E={$_.DirSyncServiceAccount}},
+    @{N='AADTenant';E={$_.InitialDomain}},
+    LastDirSyncTime,
+    DirectorySynchronizationEnabled,
+    DirectorySynchronizationStatus,
+    PasswordSynchronizationEnabled,
     SelfServePasswordResetEnabled
 }
