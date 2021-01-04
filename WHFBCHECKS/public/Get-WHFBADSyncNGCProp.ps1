@@ -8,10 +8,13 @@ function Get-WHFBADSyncNGCProp {
         [pscredential]
         $Creds
     )
-    if ($PSBoundParameters.ContainsKey('Creds')){
-        $cred = $creds 
-    } else {
-        $cred = Get-Credential
+    if ($PSBoundParameters.ContainsKey('Creds')) {
+        $cred = $creds
+    }
+    else {
+        if ($PSBoundParameters.ContainsKey('Computername')) {
+            $cred = Get-Credential
+        }
     }
     $MSKeyCredExists = $false
     if ($PSBoundParameters.ContainsKey('Computername')) {

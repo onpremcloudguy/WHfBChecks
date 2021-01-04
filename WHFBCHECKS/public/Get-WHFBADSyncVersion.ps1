@@ -12,7 +12,9 @@ function get-WHFBADSyncVersion {
         $cred = $creds
     }
     else {
-        $cred = Get-Credential
+        if ($PSBoundParameters.ContainsKey('Computername')) {
+            $cred = Get-Credential
+        }
     }
     $AADConnectVersion = $null
     if ($PSBoundParameters.ContainsKey('Computername')) {

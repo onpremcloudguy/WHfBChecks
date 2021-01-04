@@ -1,4 +1,4 @@
-function Get-WHFBCertCRLDP {
+function Get-WHFBCertSAN {
     [cmdletbinding()]
     param (
         [parameter(Mandatory = $true)]
@@ -22,20 +22,21 @@ function Get-WHFBCertCRLDP {
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
-            $res = Invoke-Command -ComputerName $Computername -ScriptBlock {
+            $res = Invoke-Command -ComputerName $Computername -ScriptBlock { 
                 $cert = Get-ChildItem $CertPath
-                $crlExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'CRL Distribution Points' }
-                $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
+                $SANExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Subject Alternative Name' }
+                $decoded = ($sanExt.Format(1) -split "`n") | ForEach-Object { if ($_ -like "*=*") { $_.split('=')[1] } }
                 [PSCustomObject]@{
-                    DistributionPoints = $decoded
-                } } -Credential $cred
+                    SAN = $decoded 
+                }
+            } -Credential $cred
         }
         else {
             $cert = Get-ChildItem $CertPath
-            $crlExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'CRL Distribution Points' }
-            $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
-            $res = [PSCustomObject]@{
-                DistributionPoints = $decoded
+            $SANExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Subject Alternative Name' }
+            $decoded = ($sanExt.Format(1) -split "`n") | ForEach-Object { if ($_ -like "*=*") { $_.split('=')[1] } }
+            [PSCustomObject]@{
+                SAN = $decoded 
             }
         }
         return $res

@@ -1,22 +1,27 @@
 function get-WHFBCA {
     $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
     $CA = ([ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,$ConfigContext").Children
-    $res = [System.Collections.ArrayList]::new()
+    
     if ($ca.Children.cn.count -gt 1) {
+        $res = [System.Collections.ArrayList]::new()
         foreach ($c in $ca) {
+            $CASvr = get-adcomputer $c.cn -properties *
             $caa = [PSCustomObject]@{
                 Name    = $c.cn
-                SVRName = $c.children.cn[0]
+                CAName  = $c.children.cn[0]
+                OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
             }
             $res.Add($caa) | out-null
         }
     }
     else {
+        $CASvr = get-adcomputer $ca.cn -properties *
         $caa = [PSCustomObject]@{
             Name    = $ca.cn
-            SVRName = $ca.children.cn[0]
+            CAName  = $ca.children.cn[0]
+            OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
         }
-        $res.Add($caa)
+        $res = $caa
     }
     return $res
 }

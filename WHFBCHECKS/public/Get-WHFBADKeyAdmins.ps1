@@ -1,4 +1,4 @@
-function Get-WHFBADKeyAdminsmembers {
+function Get-WHFBADKeyAdmins {
     $keyAdminGrp = Get-ADGroup -Identity "Key Admins" -ErrorAction SilentlyContinue
     $keyAdminGrpMembers = $null
     if($keyAdminGrp){

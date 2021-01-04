@@ -8,10 +8,13 @@ function Get-WHFBADSyncAccount {
         [pscredential]
         $Creds
     )
-    if ($PSBoundParameters.ContainsKey('Creds')){
-        $cred = $creds 
-    } else {
-        $cred = Get-Credential
+    if ($PSBoundParameters.ContainsKey('Creds')) {
+        $cred = $creds
+    }
+    else {
+        if ($PSBoundParameters.ContainsKey('Computername')) {
+            $cred = Get-Credential
+        }
     }
     $ADSyncUser = $null
     if ($PSBoundParameters.ContainsKey('Computername')) {
