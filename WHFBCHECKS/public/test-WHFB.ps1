@@ -110,6 +110,8 @@ function Test-WHFB {
     $CA = get-WHFBCA
     if ($ca.osver -lt 6.2) {
         Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+    } else {
+        Write-Host "CA $($ca.name) is on a supported version of Windows Server" -ForegroundColor Green
     }
     if ($null -eq $dccerts) {
         Write-Host "CA no KDC certificates found on the Domain Controllers`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
@@ -117,28 +119,28 @@ function Test-WHFB {
     elseif ($DCCerts.count -eq 1) {
         $CertCRLDP = (Get-WHFBCertCRLDP -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred).DistributionPoints | Where-Object { $_ -like '*http:*' }
         if (!($CertCRLDP)) {
-            Write-Host "CA KDC certificate on Domain Controller $($DCCerts.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
+            Write-Host "CA KDC cert on Domain Controller $($DCCerts.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
         }
         else {
             $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
             if ($CACRLValid.CAName -ne $ca.CAName) {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
             }
             else {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
             }
             if (!($CACRLValid.isValid)) {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
             }
             else {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is Valid" -ForegroundColor Green
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is Valid" -ForegroundColor Green
             }
             $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
             if ($CACRLLocation.protocol -ne "Local") {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
             }
             else {
-                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is located externally" -ForegroundColor Green
+                Write-Host "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located externally" -ForegroundColor Green
             }
         }
         $CertHasPrivatekey = Get-WHFBCertHasPrivateKey -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred
@@ -185,28 +187,28 @@ function Test-WHFB {
         foreach ($dcc in $DCCerts) {
             $CertCRLDP = (Get-WHFBCertCRLDP -CertPath $DCC.PSPath -Computername $DCC.PSComputerName -Creds $cred).DistributionPoints | Where-Object { $_ -like '*http:*' }
             if (!($CertCRLDP)) {
-                Write-Host "CA KDC certificate on Domain Controller $($DCC.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
             }
             else {
                 $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
                 if ($CACRLValid.CAName -ne $ca.CAName) {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
                 }
                 else {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
                 }
                 if (!($CACRLValid.isValid)) {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
                 }
                 else {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is Valid" -ForegroundColor Green
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is Valid" -ForegroundColor Green
                 }
                 $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
                 if ($CACRLLocation.protocol -ne "Local") {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
                 }
                 else {
-                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is located externally" -ForegroundColor Green
+                    Write-Host "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is located externally" -ForegroundColor Green
                 }
             }
             #check if there is a HTTP Address, and then download it.
