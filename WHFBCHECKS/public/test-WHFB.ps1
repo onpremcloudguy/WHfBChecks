@@ -13,7 +13,7 @@ function Test-WHFB {
     }
     if (!(Get-Module -ListAvailable Invoke-CommandAs)) {
         Write-Host "Installing Invoke-CommandAs module to ensure PowerShell Remote works for AAD Connect" -ForegroundColor Green
-        Install-Module Invoke-CommandAs
+        Install-Module Invoke-CommandAs -scope CurrentUser
     }
     #region AD
     $domainDetails = Get-WHFBADConfig
@@ -48,7 +48,9 @@ function Test-WHFB {
             write-host "AD Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers" -ForegroundColor Red
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $cred
-        $DCCerts.add($DCCert)
+        if ($DCCert) {
+            $DCCerts.add($DCCert)
+        }
     }
     #$KeyAdmins = get-whfbadkeyadmins #need to then link this to AAD Connect
     #endregion
@@ -110,10 +112,11 @@ function Test-WHFB {
     $CA = get-WHFBCA
     if ($ca.osver -lt 6.2) {
         Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
-    } else {
+    }
+    else {
         Write-Host "CA $($ca.name) is on a supported version of Windows Server" -ForegroundColor Green
     }
-    if ($null -eq $dccerts) {
+    if ($dccerts.Count -eq 0) {
         Write-Host "CA no KDC certificates found on the Domain Controllers`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
     }
     elseif ($DCCerts.count -eq 1) {
