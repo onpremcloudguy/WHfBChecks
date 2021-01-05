@@ -28,3 +28,4 @@ WinRM needs to be enabled on all servers you plan to target, otherwise run local
 - Get-WHFBCertTemplate:         This will return the Certificate template details.
 - Get-WHFBADConfig:             This will return the FQDN and NetBios names for the domain.
 - Get-WHFBCACRLValid:           This will query if the CRL is valid.
+- Get-WHFBCACertTemplate:       This will return the KDC Certificate Template from AD.
