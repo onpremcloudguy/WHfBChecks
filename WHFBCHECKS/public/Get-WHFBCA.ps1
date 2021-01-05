@@ -14,7 +14,7 @@ function get-WHFBCA {
             $res.Add($caa) | out-null
         }
     }
-    else {
+    elseif ($ca.Children.cn.count -eq 1) {
         $CASvr = get-adcomputer $ca.cn -properties *
         $caa = [PSCustomObject]@{
             Name    = $ca.cn

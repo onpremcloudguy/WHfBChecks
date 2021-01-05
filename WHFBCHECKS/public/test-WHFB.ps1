@@ -110,11 +110,24 @@ function Test-WHFB {
 
     #Region Certs
     $CA = get-WHFBCA
-    if ($ca.osver -lt 6.2) {
-        Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
-    }
-    else {
-        Write-Host "CA $($ca.name) is on a supported version of Windows Server" -ForegroundColor Green
+    if($ca.count -eq 0) {
+        Write-host "CA No Certificate Authority found" -ForegroundColor Red
+    } elseif ($ca.count -eq 1) {
+        if ($ca.osver -lt 6.2) {
+            Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+        }
+        else {
+            Write-Host "CA $($ca.name) is on a supported version of Windows Server" -ForegroundColor Green
+        }    
+    } elseif ($ca.count -gt 1) {
+        foreach($c in $ca) {
+            if ($c.osver -lt 6.2) {
+                Write-Host "CA $($c.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+            }
+            else {
+                Write-Host "CA $($c.name) is on a supported version of Windows Server" -ForegroundColor Green
+            }
+        }
     }
     if ($dccerts.Count -eq 0) {
         Write-Host "CA no KDC certificates found on the Domain Controllers`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
