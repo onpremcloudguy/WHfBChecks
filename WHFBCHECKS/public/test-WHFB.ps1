@@ -23,23 +23,20 @@ function Test-WHFB {
         Write-FormattedHost -Message "AD Schema $($ADSchema.OperatingSystem):" -ResultState Pass -ResultMessage "Supported"
     }
     else {
-        Write-FormattedHost -Message "AD Schema $($ADSchema.OperatingSystem):" -ResultState Fail -ResultMessage "Not Supported - needs to be Server 2016 or higher"
-        Write-host "`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-trust-prereqs#directories`n`rHow to Update: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd464018(v=ws.10)" -Foregroundcolor Magenta
+        Write-FormattedHost -Message "AD Schema $($ADSchema.OperatingSystem):" -ResultState Fail -ResultMessage "Not Supported - needs to be Server 2016 or higher" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-trust-prereqs#directories`n`rHow to Update: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd464018(v=ws.10)"
     }
     $ADFunctionalLevel = Get-WHFBADFunctionalLevel
     if ($ADFunctionalLevel.Domain[1] -eq "Supported") {
         Write-FormattedHost -Message "AD Domain functional level $($ADFunctionalLevel.domain[0]):" -ResultState Pass -ResultMessage "Supported"
     }
     else {
-        Write-FormattedHost -Message "AD Domain functional level $($ADFunctionalLevel.domain[0]):" -ResultState Fail -ResultMessage "Not Supported, needs to be Windows 2008 R2 or Higher"
-        Write-Host "`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Magenta #TODO: create a quick user guide to update domain functional level
+        Write-FormattedHost -Message "AD Domain functional level $($ADFunctionalLevel.domain[0]):" -ResultState Fail -ResultMessage "Not Supported, needs to be Windows 2008 R2 or Higher" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" #TODO: create a quick user guide to update domain functional level
     }
     if ($ADFunctionalLevel.Forest[1] -eq "Supported") {
         Write-FormattedHost -Message "AD Forest functional level $($ADFunctionalLevel.Forest[0]):" -ResultState Pass -ResultMessage "Supported"
     }
     else {
-        Write-FormattedHost -Message "AD Forest functional level $($ADFunctionalLevel.Forest[0]):" -ResultState Fail -ResultMessage "Not Supported, needs to be Windows 2008 R2 or Higher"
-        Write-Host "`nMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" -Foregroundcolor Magenta #TODO: create a quick user guide to update forest functional level
+        Write-FormattedHost -Message "AD Forest functional level $($ADFunctionalLevel.Forest[0]):" -ResultState Fail -ResultMessage "Not Supported, needs to be Windows 2008 R2 or Higher" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-cert-new-install#active-directory" #TODO: create a quick user guide to update forest functional level
     }
     $DCS = Get-WHFBADDCs
     $DCCerts = [System.Collections.ArrayList]::new()
@@ -48,8 +45,7 @@ function Test-WHFB {
             Write-FormattedHost -Message "AD Domain Controller $($dc.hostname):" -ResultState Pass -ResultMessage "Supported"
         }
         else {
-            Write-FormattedHost -Message "AD Domain Controller $($dc.hostname):" -ResultState Fail -ResultMessage "Not supported, ALL Domain Contollers must be 2016 or Higher"
-            write-host "`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers" -ForegroundColor Magenta
+            Write-FormattedHost -Message "AD Domain Controller $($dc.hostname):" -ResultState Fail -ResultMessage "Not supported, ALL Domain Contollers must be 2016 or Higher" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers"
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $cred
         if ($DCCert) {
@@ -62,13 +58,11 @@ function Test-WHFB {
     $AADConnectReleases = Get-WHFBAACCurrentVersion
     $AADConnectSettings = Get-WHFBAADConnectSettings
     if ($null -eq $AADConnectSettings.AADConnectServerName) {
-        Write-FormattedHost "AAD Connect configuration:" -ResultState Fail -ResultMessage "Not configured for $($AADConnectSettings.AADTenant)"
-        Write-Host "`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-dirsync" -ForegroundColor Magenta
+        Write-FormattedHost "AAD Connect configuration:" -ResultState Fail -ResultMessage "Not configured for $($AADConnectSettings.AADTenant)" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-dirsync"
     }
     else {
         if ($AADConnectSettings.LastDirSyncTime -lt (get-date).adddays(-1)) {
-            Write-FormattedHost "AAD Connect last synchronized:" -ResultState Fail -ResultMessage "$($AADConnectSettings.LastDirSyncTime) which is more then 24 hours ago"
-            Write-Host "`rMore information start here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/tshoot-connect-connectivity" -ForegroundColor Magenta
+            Write-FormattedHost "AAD Connect last synchronized:" -ResultState Fail -ResultMessage "$($AADConnectSettings.LastDirSyncTime) which is more then 24 hours ago" -AdditionalInfo "More information start here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/tshoot-connect-connectivity"
         }
         else {
             $AADConnectLatestVer = $AADConnectReleases | Select-Object -First 1
@@ -77,13 +71,11 @@ function Test-WHFB {
                 if ($AADConnectSettings.AADConnectVersion -eq "") {
                     $AADConnectVerString = ""
                 }
-                Write-FormattedHost "AAD Connect connector version:" -ResultState Fail -ResultMessage "$aadconnectverstring - this needs to be upgraded"
-                Write-host "`rMore information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-upgrade-previous-version" -ForegroundColor Magenta
+                Write-FormattedHost "AAD Connect connector version:" -ResultState Fail -ResultMessage "$aadconnectverstring - this needs to be upgraded" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-upgrade-previous-version"
             }
             else {
                 if ($AADConnectSettings.AADConnectVersion -ne $AADConnectLatestVer) {
-                    Write-FormattedHost "AAD Connect connector version:" -ResultState Warning -ResultMessage "$($AADConnectSettings.AADConnectVersion) - recommended to upgrade"
-                    Write-host "`rMore information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-upgrade-previous-version" -ForegroundColor Magenta
+                    Write-FormattedHost "AAD Connect connector version:" -ResultState Warning -ResultMessage "$($AADConnectSettings.AADConnectVersion) - recommended to upgrade" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-upgrade-previous-version"
                 }
                 else {
                     Write-FormattedHost "AAD Connect connector version:" -ResultState Pass -ResultMessage "$($AADConnectSettings.AADConnectVersion) - is up to date"
@@ -95,24 +87,21 @@ function Test-WHFB {
                 Write-FormattedHost "AAD Connect AD Sync Account $ADSyncUser is in the `"Key Admins`" group:" -ResultState Pass -ResultMessage "Yes"
             }
             else {
-                Write-FormattedHost "AAD Connect AD Sync Account $ADSyncUser is in the `"Key Admins`" group:" -ResultState Fail -ResultMessage "No"
-                Write-Host "`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-whfb-settings-dir-sync" -ForegroundColor Magenta
+                Write-FormattedHost "AAD Connect AD Sync Account $ADSyncUser is in the `"Key Admins`" group:" -ResultState Fail -ResultMessage "No" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-whfb-settings-dir-sync"
             }
             $ADSyncNGCProp = Get-WHFBADSyncNGCProp -ComputerName $AADConnectSettings.AADConnectServerName -Creds $cred
             if ($ADSyncNGCProp) {
                 Write-FormattedHost -Message "AAD Connect Schema on server $($AADConnectSettings.AADConnectServerName):" -ResultState Pass -ResultMessage "Up to date"
             }
             else {
-                Write-FormattedHost -Message "AAD Connect Schema on server $($AADConnectSettings.AADConnectServerName):" -ResultState Fail -ResultMessage "Not up to date"
-                Write-Host "`rMore information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-installation-wizard#refresh-directory-schema" -ForegroundColor Magenta
+                Write-FormattedHost -Message "AAD Connect Schema on server $($AADConnectSettings.AADConnectServerName):" -ResultState Fail -ResultMessage "Not up to date" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-installation-wizard#refresh-directory-schema"
             }
             $ADSyncNGCSync = Get-WHFBADSyncNGCSync -ComputerName $AADConnectSettings.AADConnectServerName -creds $cred
             if ($ADSyncNGCSync) {
                 Write-FormattedHost -Message "AAD Connect Schema on server $($AADConnectSettings.AADConnectServerName):" -ResultState Pass -ResultMessage "Up to date" ##todo: is this worded correctly? seems to be a duplicate of line 105
             }
             else {
-                Write-FormattedHost -Message "msDS-KeyCredentialLink sync enabled on $($AADConnectSettings.AADConnectServerName):" -ResultState Fail -ResultMessage "Not enabled"
-                Write-Host "`rMore information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/reference-connect-sync-attributes-synchronized" -ForegroundColor Magenta
+                Write-FormattedHost -Message "msDS-KeyCredentialLink sync enabled on $($AADConnectSettings.AADConnectServerName):" -ResultState Fail -ResultMessage "Not enabled" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/reference-connect-sync-attributes-synchronized"
             }
         }
     }
