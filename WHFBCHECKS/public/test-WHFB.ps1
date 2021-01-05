@@ -89,8 +89,6 @@ function Test-WHFB {
                     Write-FormattedHost "AAD Connect connector version:" -ResultState Pass -ResultMessage "$($AADConnectSettings.AADConnectVersion) - is up to date"
                 }
             }
-            Write-FormattedHost ":" -ResultState Pass -ResultMessage ""
-            Write-FormattedHost ":" -ResultState Fail -ResultMessage ""
             $ADSyncUser = Get-WHFBADSyncAccount -ComputerName $AADConnectSettings.AADConnectServerName -Creds $cred
             $ADSyncUserGrps = Get-WHFBADSyncAccountGroups -username $ADSyncUser.split('\')[1]
             if ($ADSyncUserGrps.Name -contains "Key Admins") {
