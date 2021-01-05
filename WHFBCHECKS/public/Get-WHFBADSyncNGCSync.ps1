@@ -18,9 +18,9 @@ function Get-WHFBADSyncNGCSync {
     }
     $MSKeyCredSync = $false
     if ($PSBoundParameters.ContainsKey('Computername')) {
-        $MSKeyCredSync = Invoke-Command -ComputerName $Computername -ScriptBlock {
+        $MSKeyCredSync = Invoke-CommandAs -ComputerName $Computername -ScriptBlock {
             (Get-ADSyncRule | Where-Object {$_.AttributeFlowMappings.destination -eq "msDS-KeyCredentialLink" -and $_.disabled -eq $false}).count -gt 0
-        } -Credential $cred
+        } -Credential $cred -AsSystem
     } else
     {
         $MSKeyCredSync = (Get-ADSyncRule | Where-Object {$_.AttributeFlowMappings.destination -eq "msDS-KeyCredentialLink" -and $_.disabled -eq $false}).count -gt 0

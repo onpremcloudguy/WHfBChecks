@@ -22,10 +22,10 @@ function Get-WHFBCertHasPrivateKey {
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
-            $res = Invoke-Command -ComputerName $Computername -ScriptBlock {
+            $res = Invoke-Command -ComputerName $Computername -ScriptBlock { param($certpath)
                 $cert = Get-ChildItem $CertPath
                 $cert.HasPrivateKey
-            } -Credential $cred
+            } -Credential $cred -ArgumentList $CertPath
         }
         else {
             $cert = Get-ChildItem $CertPath

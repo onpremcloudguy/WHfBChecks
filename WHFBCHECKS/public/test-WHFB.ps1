@@ -3,10 +3,7 @@ function Test-WHFB {
     param (
         [Parameter(Mandatory = $false)]
         [PSCredential]
-        $Creds,
-        [Parameter(Mandatory = $false)]
-        [String]
-        $AADConnectSvrName
+        $Creds
     )
     if ($PSBoundParameters.ContainsKey('Creds')) {
         [PSCredential]$cred = $creds
@@ -14,7 +11,13 @@ function Test-WHFB {
     else {
         $cred = Get-Credential
     }
+    if (!(Get-Module -ListAvailable Invoke-CommandAs)) {
+        Write-Host "Installing Invoke-CommandAs module to ensure PowerShell Remote works for AAD Connect" -ForegroundColor Green
+        Install-Module Invoke-CommandAs
+    }
     #region AD
+    $domainDetails = Get-WHFBADConfig
+    Write-Host "Running check for Windows Hello for Business for the following Domain:`n`rFQDN: $($domaindetails.DNSRoot)`n`rNetBios: $($domaindetails.NetBIOSName)" -ForegroundColor Green
     $ADSchema = Get-WHFBADSchema
     if ($ADSchema.supported -eq "Supported") {
         Write-host "AD Schema $($ADSchema.OperatingSystem) is supported" -Foregroundcolor Green
@@ -39,10 +42,10 @@ function Test-WHFB {
     $DCCerts = [System.Collections.ArrayList]::new()
     foreach ($DC in $DCS) {
         if ([decimal]$dc.OperatingSystemVersion.split(" ")[0] -eq 10.0) {
-            write-host "Domain Controller $($dc.hostname) is supported" -Foregroundcolor Green
+            write-host "AD Domain Controller $($dc.hostname) is supported" -Foregroundcolor Green
         }
         else {
-            write-host "Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers" -ForegroundColor Red
+            write-host "AD Domain Controller $($dc.hostname) is not supported, ALL Domain Contollers must be 2016 or Higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers" -ForegroundColor Red
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $cred
         $DCCerts.add($DCCert)
@@ -79,7 +82,7 @@ function Test-WHFB {
             }
             $ADSyncUser = Get-WHFBADSyncAccount -ComputerName $AADConnectSettings.AADConnectServerName -Creds $cred
             $ADSyncUserGrps = Get-WHFBADSyncAccountGroups -username $ADSyncUser.split('\')[1]
-            if ($ADSyncUserGrps -contains "Key Admins") {
+            if ($ADSyncUserGrps.Name -contains "Key Admins") {
                 Write-Host "AAD Connect AD Sync Account $ADSyncUser is in the `"Key Admins`" group" -ForegroundColor Green
             }
             else {
@@ -105,13 +108,148 @@ function Test-WHFB {
 
     #Region Certs
     $CA = get-WHFBCA
-    if($ca.osver -lt 6.2) {
+    if ($ca.osver -lt 6.2) {
         Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
     }
-    if($null = $dccerts) {
+    if ($null -eq $dccerts) {
         Write-Host "CA no KDC certificates found on the Domain Controllers`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
-    } else {
-        
+    }
+    elseif ($DCCerts.count -eq 1) {
+        $CertCRLDP = (Get-WHFBCertCRLDP -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred).DistributionPoints | Where-Object { $_ -like '*http:*' }
+        if (!($CertCRLDP)) {
+            Write-Host "CA KDC certificate on Domain Controller $($DCCerts.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
+        }
+        else {
+            $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
+            if ($CACRLValid.CAName -ne $ca.CAName) {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
+            }
+            else {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
+            }
+            if (!($CACRLValid.isValid)) {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
+            }
+            else {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is Valid" -ForegroundColor Green
+            }
+            $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
+            if ($CACRLLocation.protocol -ne "Local") {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
+            }
+            else {
+                Write-Host "CA KDC Certificate CRL on Domain Controller $($DCCerts.PSComputerName) is located externally" -ForegroundColor Green
+            }
+        }
+        $CertHasPrivatekey = Get-WHFBCertHasPrivateKey -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred
+        if ($CertHasPrivatekey) {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has a Private Key" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) does not have a Private Key`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+        $certKey = Get-WHFBCertKey -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred
+        if ($certkey.KeyPublisher -eq "RSA") {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has a public key from RSA" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) public key was issued by $($certkey.KeyPublisher) not by RSA`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+        if ($certKey.KeySize -eq 2048) {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has a public key encryption of 2048" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) public key has been encrypted as $($certkey.KeySize) not 2048 as required`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+        $certSAN = (Get-WHFBCertSAN -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred).san
+        if ($certSAN -contains $DCCerts.PSComputerName) {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has $($DCCerts.PSComputerName) in the SAN list" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) doesn't have $($DCCerts.PSComputerName) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+        if ($certsan -contains $domainDetails.NetBiosName) {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has $($domainDetails.NetBiosName) in the SAN list" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) doesn't have $($domainDetails.NetBiosName) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+        if ($certsan -contains $domainDetails.DNSRoot) {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) has $($domainDetails.DNSRoot) in the SAN list" -ForegroundColor Green
+        }
+        else {
+            Write-Host "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) doesn't have $($domainDetails.DNSRoot) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        }
+    }
+    elseif ($DCCerts.count -gt 1) {
+        foreach ($dcc in $DCCerts) {
+            $CertCRLDP = (Get-WHFBCertCRLDP -CertPath $DCC.PSPath -Computername $DCC.PSComputerName -Creds $cred).DistributionPoints | Where-Object { $_ -like '*http:*' }
+            if (!($CertCRLDP)) {
+                Write-Host "CA KDC certificate on Domain Controller $($DCC.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
+            }
+            else {
+                $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
+                if ($CACRLValid.CAName -ne $ca.CAName) {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) Does Not match the issuing Certificate Authority, confirm Certificate Authority issuing cert" -ForegroundColor Red
+                }
+                else {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) matches the issuing Certificate Authority" -ForegroundColor Green
+                }
+                if (!($CACRLValid.isValid)) {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is not Valid, it expired on $($CACRLValid.NextUpdate)`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#publish-a-new-crl" -ForegroundColor Red
+                }
+                else {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is Valid" -ForegroundColor Green
+                }
+                $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
+                if ($CACRLLocation.protocol -ne "Local") {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is located Internally on IP $($CACRLLocation.IPAddress), should be external`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp" -ForegroundColor Red
+                }
+                else {
+                    Write-Host "CA KDC Certificate CRL on Domain Controller $($DCC.PSComputerName) is located externally" -ForegroundColor Green
+                }
+            }
+            #check if there is a HTTP Address, and then download it.
+            $CertHasPrivatekey = Get-WHFBCertHasPrivateKey -CertPath $DCC.PSPath -Computername $DCC.PSComputerName -Creds $cred
+            if ($CertHasPrivatekey) {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has a Private Key" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) does not have a Private Key`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+            $certKey = Get-WHFBCertKey -CertPath $DCC.PSPath -Computername $DCC.PSComputerName -Creds $cred
+            if ($certkey.KeyPublisher -eq "RSA") {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has a public key from RSA" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) public key was issued by $($certkey.KeyPublisher) not by RSA`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+            if ($certKey.KeySize -eq 2048) {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has a public key encryption of 2048" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) public key has been encrypted as $($certkey.KeySize) not 2048 as required`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+            $certSAN = (Get-WHFBCertSAN -CertPath $DCC.PSPath -Computername $DCC.PSComputerName -Creds $cred).san
+            if ($certSAN -contains $DCC.PSComputerName) {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has $($DCC.PSComputerName) in the SAN list" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) doesn't have $($DCC.PSComputerName) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+            if ($certsan -contains $domainDetails.NetBiosName) {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has $($domainDetails.NetBiosName) in the SAN list" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) doesn't have $($domainDetails.NetBiosName) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+            if ($certsan -contains $domainDetails.DNSRoot) {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) has $($domainDetails.DNSRoot) in the SAN list" -ForegroundColor Green
+            }
+            else {
+                Write-Host "CA KDC Cert on Domain Controller $($DCC.PSComputerName) doesn't have $($domainDetails.DNSRoot) in the SAN list`n`rMore Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+            }
+        }
     }
     #EndRegion
 }

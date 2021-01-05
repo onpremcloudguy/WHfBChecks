@@ -22,26 +22,26 @@ function Get-WHFBCertTemplate {
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
-            $res = Invoke-Command -ComputerName $Computername -ScriptBlock {
+            $res = Invoke-Command -ComputerName $Computername -ScriptBlock {param($certpath)
                 $cert = Get-ChildItem $CertPath
                 $templateExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Certificate Template Information' }
-                $decoded = ($templateExt.Format(1) -split "`n") | Where-Object {$_ -like '*=*'}
+                $decoded = ($templateExt.Format(1) -split "`n") | Where-Object { $_ -like '*=*' }
                 $temp = New-Object psobject
-                foreach($d in $decoded) {
+                foreach ($d in $decoded) {
                     $TemplateSplit = $d -split '='
                     $temp | Add-Member -Name $TemplateSplit[0] -MemberType NoteProperty -Value $TemplateSplit[1]
                 }
-                $temp} -Credential $cred
+                $temp } -Credential $cred -ArgumentList $CertPath
         }
         else {
-             $cert = Get-ChildItem $CertPath
-                $templateExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Certificate Template Information' }
-                $decoded = ($templateExt.Format(1) -split "`n") | Where-Object {$_ -like '*=*'}
-                $res = New-Object psobject
-                foreach($d in $decoded) {
-                    $TemplateSplit = $d -split '='
-                    $temp | Add-Member -Name $TemplateSplit[0] -MemberType NoteProperty -Value $TemplateSplit[1]
-                }
+            $cert = Get-ChildItem $CertPath
+            $templateExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Certificate Template Information' }
+            $decoded = ($templateExt.Format(1) -split "`n") | Where-Object { $_ -like '*=*' }
+            $res = New-Object psobject
+            foreach ($d in $decoded) {
+                $TemplateSplit = $d -split '='
+                $res | Add-Member -Name $TemplateSplit[0] -MemberType NoteProperty -Value $TemplateSplit[1]
+            }
         }
         return $res
     }

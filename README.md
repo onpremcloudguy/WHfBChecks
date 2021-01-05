@@ -19,10 +19,12 @@ WinRM needs to be enabled on all servers you plan to target, otherwise run local
 - Get-WHFBCertCRLDP:            This will return the CRL DP from certificate to allow for validation.
 - Get-WHFBADFunctionalLevel:    This will return the AD Functional Level for both domain and forest.
 - Test-WHFB:                    This will test all of the functions on your environment.
-- Get-WHFBAADCCurrentVer:       This will query MS Docs to get the AAD Connect Versions.
+- Get-WHFBAADCCurrentVersion:   This will query MS Docs to get the AAD Connect Versions.
 - Get-WHFBAADConnectSettings:   This will return the AAD Connect settings from AAD.
 - Get-WHFBADCertTR:             This will return the Trusted Root certificate of a certificate.
 - Get-WHFBCertHasPrivateKey:    This will check if the certificate has a private key.
 - Get-WHFBCertKey:              This will return the Certificate Signing Key details.
 - Get-WHFBCertSAN:              This will return the Certificate Subject Alternate Names.
 - Get-WHFBCertTemplate:         This will return the Certificate template details.
+- Get-WHFBADConfig:             This will return the FQDN and NetBios names for the domain.
+- Get-WHFBCACRLValid:           This will query if the CRL is valid.

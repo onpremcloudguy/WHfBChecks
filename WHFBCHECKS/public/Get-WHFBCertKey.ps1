@@ -22,14 +22,14 @@ function Get-WHFBCertKey {
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
-            $res = Invoke-Command -ComputerName $Computername -ScriptBlock { 
+            $res = Invoke-Command -ComputerName $Computername -ScriptBlock { param($certpath)
                 $cert = Get-ChildItem $CertPath
-                $cert.PublicKey.Key | Select-Object Keysize, @{N='KeyPublisher'; E = {($_.KeyExchangeAlgorithm -split '-')[0]}}
-            } -Credential $cred
+                $cert.PublicKey.Key | Select-Object Keysize, @{N = 'KeyPublisher'; E = { ($_.KeyExchangeAlgorithm -split '-')[0] } }
+            } -Credential $cred -ArgumentList $CertPath
         }
         else {
             $cert = Get-ChildItem $CertPath
-            $res = $cert.PublicKey.Key | Select-Object Keysize, @{N='KeyPublisher'; E = {($_.KeyExchangeAlgorithm -split '-')[0]}}
+            $res = $cert.PublicKey.Key | Select-Object Keysize, @{N = 'KeyPublisher'; E = { ($_.KeyExchangeAlgorithm -split '-')[0] } }
         }
         return $res
     }
