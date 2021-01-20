@@ -3,6 +3,8 @@ A group of PowerShell scripts to check that your environment is ready for Window
 
 Needs to have the RSAT Active Directory tools enabled.
 The MSOnline module needs to be installed on the computer running the script.
+The WHfBTools Module needs to be installed on the computer running the script.
+The Invoke-CommandAs module needs to be installed on the computer running the script.
 WinRM needs to be enabled on all servers you plan to target, otherwise run locally.
 
 - Get-WHFBADSyncVersion:        This will return the version of AAD Connect that you have installed.
