@@ -12,7 +12,7 @@ function Test-WHFB {
         $cred = Get-Credential
     }
     if (!(Get-Module -ListAvailable Invoke-CommandAs)) {
-        Write-Host "Installing Invoke-CommandAs module to ensure PowerShell Remote works for AAD Connect" -ForegroundColor Green
+        Write-FormattedHost -Message "Invoke-CommandAs module not installed, this ensures PowerShell Remote works for AAD Connect" -ResultState Fail -ResultMessage "Installing Invoke-CommandAs now"
         Install-Module Invoke-CommandAs -scope CurrentUser
     }
     #region AD
@@ -114,34 +114,35 @@ function Test-WHFB {
     }
     elseif ($ca.count -eq 1) {
         if ($ca.osver -lt 6.2) {
-            Write-Host "CA $($ca.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+            Write-FormattedHost -Message "CA $($ca.name) version of Windows is $($ca.osver) which is:" -ResultState Fail -ResultMessage "Unsupported" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure"
         }
         else {
-            Write-Host "CA $($ca.name) is on a supported version of Windows Server" -ForegroundColor Green
+            Write-FormattedHost -Message "CA $($ca.name) version of Windows is $($ca.osver) which is:" -ResultState Pass -ResultMessage "Supported"
         }
     }
     elseif ($ca.count -gt 1) {
         foreach ($c in $ca) {
             if ($c.osver -lt 6.2) {
-                Write-Host "CA $($c.name) is on an unsupported version of Windows, it needs to be at Windows Server 2012 or higher`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+                Write-FormattedHost -Message "CA $($ca.name) version of Windows is $($ca.osver) which is:" -ResultState Fail -ResultMessage "Unsupported" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure"
             }
             else {
-                Write-Host "CA $($c.name) is on a supported version of Windows Server" -ForegroundColor Green
+                Write-FormattedHost -Message "CA $($ca.name) version of Windows is $($ca.osver) which is:" -ResultState Pass -ResultMessage "Supported"
             }
         }
     }
     $CACertTemplate = Get-WHFBCACertTemplate
     if(!($CACertTemplate)) {
-        Write-Host "CA No KDC Certificate Template found`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure" -ForegroundColor Red
+        Write-FormattedHost -Message "CA KDC Certificate Template is:" -ResultState Fail -ResultMessage "Missing" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-key-trust-prereqs#public-key-infrastructure"
     } else {
-        Write-Host "CA KDC Certificate Template named: `"$($CACertTemplate.displayName)`" exists." -ForegroundColor Green
+        Write-FormattedHost -Message "CA KDC Certificate Template is:" -ResultState Pass -ResultMessage $CACertTemplate.displayName
     }
     if ($dccerts.Count -eq 0) {
-        Write-Host "CA no KDC certificates found on the Domain Controllers`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base" -ForegroundColor Red
+        Write-FormattedHost -Message "CA KDC Certificate on Domain Controllers:" -ResultState Fail -ResultMessage "Missing" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
     }
     elseif ($DCCerts.count -eq 1) {
         $CertCRLDP = (Get-WHFBCertCRLDP -CertPath $DCCerts.PSPath -Computername $DCCerts.PSComputerName -Creds $cred).DistributionPoints | Where-Object { $_ -like '*http:*' }
         if (!($CertCRLDP)) {
+            
             Write-Host "CA KDC cert on Domain Controller $($DCCerts.PSComputerName) does not include a HTTP CRL`n`rMore information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#configuring-a-crl-distribution-point-for-an-issuing-certificate-authority" -ForegroundColor Red
         }
         else {
