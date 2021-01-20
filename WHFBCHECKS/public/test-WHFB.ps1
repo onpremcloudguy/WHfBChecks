@@ -198,16 +198,16 @@ function Test-WHFB {
             Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCCerts.PSComputerName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
         }
         if ($certsan -contains $domainDetails.NetBiosName) {
-            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($DCCerts.NetBiosName)"
+            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($domainDetails.NetBiosName)"
         }
         else {
-            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCCerts.NetBiosName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
+            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($domainDetails.NetBiosName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
         }
         if ($certsan -contains $domainDetails.DNSRoot) {
-            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($DCCerts.DNSRoot)"
+            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($domainDetails.DNSRoot)"
         }
         else {
-            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCCerts.DNSRoot)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
+            Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCCerts.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($domainDetails.DNSRoot)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
         }
     }
     elseif ($DCCerts.count -gt 1) {
@@ -268,16 +268,16 @@ function Test-WHFB {
                 Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCC.PSComputerName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
             }
             if ($certsan -contains $domainDetails.NetBiosName) {
-                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($DCC.NetBiosName)"
+                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($domainDetails.NetBiosName)"
             }
             else {
-                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCC.NetBiosName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
+                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($domainDetails.NetBiosName)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
             }
             if ($certsan -contains $domainDetails.DNSRoot) {
-                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($DCC.DNSRoot)"
+                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Pass -ResultMessage "Contains $($domainDetails.DNSRoot)"
             }
             else {
-                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($DCC.DNSRoot)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
+                Write-FormattedHost -Message "CA KDC Cert on Domain Controller $($DCC.PSComputerName) SAN List:" -ResultState Fail -ResultMessage "Does not Contain $($domainDetails.DNSRoot)" -AdditionalInfo "More Information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base"
             }
         }
     }
