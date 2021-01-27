@@ -1,11 +1,36 @@
+<#
+.SYNOPSIS
+
+This function will return the trusted root certificates for a specified certificate
+
+.DESCRIPTION
+
+This function will return all certificates in a trusted root chain for a specified certificate.
+
+.EXAMPLE
+
+PS C:\>Get-WHFBADCertTR -Computername computer1.domain.local -Cert $certificate -Creds (get-credential)
+
+.INPUTS
+
+Cert = System.Security.Cryptography.X509Certificates.X509Certificate2 object, which is the output from get-childitem on cert:\localmachine\my path.
+Creds = PSCredential which is a local admin account
+
+.OUTPUTS
+
+Array of System.Security.Cryptography.X509Certificates.X509Certificate2 object/s depending upon depth of Chain.
+#>
 function Get-WHFBADCertTR {
     [CmdletBinding()]
     param (
+        #Remote Computer name to run the test on
         [Parameter()]
         [string]
         $Computername,
+        #Certificate object to check
         [Parameter()]
         $cert,
+        #Admin Credentials for system to check include domain/username process.
         [Parameter(Mandatory = $false)]
         [PSCredential]
         $Creds

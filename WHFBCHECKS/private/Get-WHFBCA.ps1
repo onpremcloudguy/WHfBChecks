@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+
+This function will connect to Active Directory and return the registered Certificate Authorities.
+
+#>
 function get-WHFBCA {
     $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
     $CA = ([ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,$ConfigContext").Children

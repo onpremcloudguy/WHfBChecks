@@ -1,9 +1,24 @@
+<#
+.SYNOPSIS
+
+This function will return the KDC Certificates from domain controllers in your environment.
+
+.DESCRIPTION
+
+This function returns all of the KDC Certificates from the targeted domain controllers
+
+.OUTPUTS
+
+Array of System.Security.Cryptography.X509Certificates.X509Certificate2 object/s depending upon number of certificates on domain controller
+#>
 function Get-WHFBADDCCerts {
     [CmdletBinding()]
     param (
+        #Computer name of the Domain Controller you want to target
         [Parameter()]
         [string]
         $Computername,
+        #Domain Admin Credentials (at minimum needs to have read access to certificates on the domain Controller.)
         [Parameter(Mandatory = $false)]
         [PSCredential]
         $Creds

@@ -1,12 +1,21 @@
+<#
+.SYNOPSIS
+
+This function will return the Certificate template that was used to issue the designated certificate on the Domain Controller designated
+
+#>
 function Get-WHFBCertTemplate {
     [cmdletbinding()]
     param (
+        # Path to the Certificate on the Domain Controller
         [parameter(Mandatory = $true)]
         [string]
         $CertPath,
-        [Parameter()]
+        # Hostname of the Domain Controller
+        [Parameter(Mandatory = $false)]
         [string]
         $Computername,
+        # Admin credentials for the Domain Controller
         [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds
@@ -22,7 +31,7 @@ function Get-WHFBCertTemplate {
     try {
         $res = $null
         if ($PSBoundParameters.ContainsKey('Computername')) {
-            $res = Invoke-Command -ComputerName $Computername -ScriptBlock {param($certpath)
+            $res = Invoke-Command -ComputerName $Computername -ScriptBlock { param($certpath)
                 $cert = Get-ChildItem $CertPath
                 $templateExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'Certificate Template Information' }
                 $decoded = ($templateExt.Format(1) -split "`n") | Where-Object { $_ -like '*=*' }

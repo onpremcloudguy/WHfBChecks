@@ -1,9 +1,17 @@
+<#
+.SYNOPSIS
+
+This function will return the current version of the AAD Connect Sync engine
+
+#>
 function get-WHFBADSyncVersion {
     [CmdletBinding()]
     param (
+        # Hostname of the AAD Connect Server
         [Parameter(Mandatory = $false)]
         [string]
         $Computername,
+        # Admin credentials for the AAD Connect Server
         [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds

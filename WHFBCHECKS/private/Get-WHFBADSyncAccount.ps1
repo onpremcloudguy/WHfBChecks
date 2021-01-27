@@ -1,10 +1,18 @@
+<#
+.SYNOPSIS
+
+This function will connect to the AAD Connect server, and return back the user account that is being used to sync with Active Directory
+
+#>
 function Get-WHFBADSyncAccount {
     [CmdletBinding()]
     param (
+        # Hostname of the AAD Connect Server
         [Parameter(Mandatory = $false)]
         [string]
         $Computername,
-        [Parameter(Mandatory=$false)]
+        # Admin credentials for the AAD Connect Server
+        [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds
     )

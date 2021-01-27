@@ -1,6 +1,40 @@
+<#
+.SYNOPSIS
+
+This function allows for you to interigate your identity platform to validate if it is ready to enable Windows Hello for Business (WHFB) - Hybrid Key-Trust method
+
+.DESCRIPTION
+
+This function will reach out to 
+Active Directory, and obtain the following:
+    - Directory Schema version
+    - Domain and Forest functional level
+    - List of Domain Controllers, on each we check:
+        - Operating System Version
+        - Certificate
+            - Issuing Certificate Template
+            - CRLDP address
+            - SAN address
+            - Encryption provider
+    - Member of Key Admins group
+    - Registered Certificate Authorities
+    - All Certificate Templates that meet the requirements for WHFB
+
+Azure Active Directory, and obtain the following:
+    - AAD Connect Server Name
+    - AAD Connect Sync status
+    - AAD Connect last sync time 
+
+Azure Active Directory Connect, and obtain the following:
+    - AAD Connect Version
+    - AAD Connect AD Sync Account
+    - AAD Connect Schema check for "msDS-KeyCredentialLink" and if it is Sync'ing
+
+#>
 function Test-WHFB {
     [CmdletBinding()]
     param (
+        # An admin account that has access to Domain Controllers, AAD Connect Server, and Certificate Authority
         [Parameter(Mandatory = $false)]
         [PSCredential]
         $Creds
@@ -15,9 +49,29 @@ function Test-WHFB {
         Write-Host "Installing Invoke-CommandAs module to ensure PowerShell Remote works for AAD Connect" -ForegroundColor Green
         Install-Module Invoke-CommandAs -scope CurrentUser
     }
+    if (!(get-module -ListAvailable MSOnline)) {
+        Write-Host "Installing MSOnline module to Allow interigation of AADConnect Settings" -ForegroundColor Green
+        install-module MSOnline
+    }
+    import-module MSOnline
     #region AD
     $domainDetails = Get-WHFBADConfig
-    Write-Host "Running check for Windows Hello for Business for the following Domain:`n`rFQDN: $($domaindetails.DNSRoot)`n`rNetBios: $($domaindetails.NetBIOSName)" -ForegroundColor Green
+    Write-Host "Please sign in with AAD Global Administrator account for the tenant connected to domain: $($domaindetails.DNSRoot)" -ForegroundColor Green
+    $module = Get-Module MSOnline
+    add-type -path "$($module.ModuleBase)\Microsoft.IdentityModel.Clients.ActiveDirectory.dll"
+    $AuthSessions = [Microsoft.IdentityModel.Clients.ActiveDirectory.TokenCache]::DefaultShared.ReadItems()
+    $authed = $false
+    foreach ($AuthSession in $AuthSessions) {
+        if ($AuthSession.clientid -eq "1b730954-1685-4b74-9bfd-dac224a7b894") {
+            if ($AuthSession.expireson -gt (Get-Date)) {
+                $authed = $true
+            }
+        }
+    }
+    if (!$authed) {
+        Connect-MsolService
+    }
+    Write-Host "Running check for Windows Hello for Business for the following Domain`n`rFQDN: $($domaindetails.DNSRoot)`n`rNetBios: $($domaindetails.NetBIOSName)" -ForegroundColor Green
     $ADSchema = Get-WHFBADSchema
     if ($ADSchema.supported -eq "Supported") {
         Write-FormattedHost -Message "AD Schema $($ADSchema.OperatingSystem):" -ResultState Pass -ResultMessage "Supported"

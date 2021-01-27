@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+
+This will query the domain and return the Domain and Forest functional level
+
+#>
 function Get-WHFBADFunctionalLevel {
     $DMode = (Get-ADDomain).DomainMode
     $DomainMode = switch ($dmode.value__) {

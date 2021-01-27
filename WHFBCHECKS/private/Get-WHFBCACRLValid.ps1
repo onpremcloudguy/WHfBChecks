@@ -1,7 +1,14 @@
+<#
+.SYNOPSIS
+
+This function will convert the CRL BYTE string into an object that includes the CA Name, the issuance date, next update time, and if it is Valid.
+
+#>
 Function Get-WHFBCACRLValid {
     [CmdletBinding()]
     Param
     (
+        # The raw content of the CRL file from the CRL Distribution Point
         [Parameter()]
         [Byte[]]
         $CRL

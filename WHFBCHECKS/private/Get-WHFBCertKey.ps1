@@ -1,12 +1,21 @@
-function Get-WHFBCertCRLDP {
+<#
+.SYNOPSIS
+
+This function will return the Certificate Key Publisher from the designated certificate and Domain Controller
+
+#>
+function Get-WHFBCertKey {
     [cmdletbinding()]
     param (
+        # Path to the Certificate on the Domain Controller
         [parameter(Mandatory = $true)]
         [string]
         $CertPath,
-        [Parameter()]
+        # Hostname of the Domain Controller
+        [Parameter(Mandatory = $false)]
         [string]
         $Computername,
+        # Admin credentials for the Domain Controller
         [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds
@@ -24,19 +33,12 @@ function Get-WHFBCertCRLDP {
         if ($PSBoundParameters.ContainsKey('Computername')) {
             $res = Invoke-Command -ComputerName $Computername -ScriptBlock { param($certpath)
                 $cert = Get-ChildItem $CertPath
-                $crlExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'CRL Distribution Points' }
-                $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
-                [PSCustomObject]@{
-                    DistributionPoints = $decoded
-                } } -Credential $cred -ArgumentList $CertPath
+                $cert.PublicKey.Key | Select-Object Keysize, @{N = 'KeyPublisher'; E = { ($_.KeyExchangeAlgorithm -split '-')[0] } }
+            } -Credential $cred -ArgumentList $CertPath
         }
         else {
             $cert = Get-ChildItem $CertPath
-            $crlExt = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -match 'CRL Distribution Points' }
-            $decoded = (($crlExt.Format(1) -split "Full Name:")[-1]) -split 'URL=' | ForEach-Object { if ($_.Trim().Length -gt 1) { $_.Trim() } }
-            $res = [PSCustomObject]@{
-                DistributionPoints = $decoded
-            }
+            $res = $cert.PublicKey.Key | Select-Object Keysize, @{N = 'KeyPublisher'; E = { ($_.KeyExchangeAlgorithm -split '-')[0] } }
         }
         return $res
     }

@@ -1,3 +1,8 @@
+<#
+.SYNOPSIS
+
+This function will return the AD Schema version, and report if it is supported or not.
+#>
 function Get-WHFBADSchema {
     $schemaVersion = (Get-ADObject (Get-ADRootDSE).schemaNamingContext -Property objectVersion).ObjectVersion
     $schemaOS = switch ($schemaVersion){

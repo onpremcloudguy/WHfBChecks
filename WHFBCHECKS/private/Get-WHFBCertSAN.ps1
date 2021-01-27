@@ -1,12 +1,21 @@
+<#
+.SYNOPSIS
+
+This function will return the Subject Alternative Names (SAN) from the designated certificate on the Domain Controller
+
+#>
 function Get-WHFBCertSAN {
     [cmdletbinding()]
     param (
+        # Path to the Certificate on the Domain Controller
         [parameter(Mandatory = $true)]
         [string]
         $CertPath,
-        [Parameter()]
+        # Hostname of the Domain Controller
+        [Parameter(Mandatory = $false)]
         [string]
         $Computername,
+        # Admin credentials for the Domain Controller
         [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds

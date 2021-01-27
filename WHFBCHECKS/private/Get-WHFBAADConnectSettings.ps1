@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+
+This function will connect to Azure Active Directory and return back information about the AADConnect settings.
+
+.DESCRIPTION
+
+This function will connect to AAD and return back the AAD Connect Servername, AppType, version, Account used, full tenant name, Last Sync, Directory Sync enabled, Directory Sync Status, and if Self Service password reset is enabled.
+
+.OUTPUTS
+
+Selected.Microsoft.Online.Administration.CompanyInformation. 
+Get-WHFBAADConnectSettings returns a subset of the result from the Get-MsolCompanyInformation commandlet.
+#>
 function Get-WHFBAADConnectSettings {
     if (!(get-module -ListAvailable MSOnline)) {
         install-module MSOnline

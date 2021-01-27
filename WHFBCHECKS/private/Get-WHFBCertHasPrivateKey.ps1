@@ -1,12 +1,21 @@
+<#
+.SYNOPSIS
+
+This function will return if the certificate on the Domain Controller has the Private key
+
+#>
 function Get-WHFBCertHasPrivateKey {
     [cmdletbinding()]
     param (
+        # Path to the Certificate on the Domain Controller
         [parameter(Mandatory = $true)]
         [string]
         $CertPath,
-        [Parameter()]
+        # Hostname of the Domain Controller
+        [Parameter(Mandatory = $false)]
         [string]
         $Computername,
+        # Admin credentials for the Domain Controller
         [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds

@@ -1,10 +1,18 @@
+<#
+.SYNOPSIS
+
+This function will return if the AAD Connect Schema inclues the "msDS-KeyCredentialLink" object
+
+#>
 function Get-WHFBADSyncNGCProp {
     [CmdletBinding()]
     param (
-        [Parameter()]
+        # Hostname of the AAD Connect Server
+        [Parameter(Mandatory = $false)]
         [string]
         $Computername,
-        [Parameter(Mandatory=$false)]
+        # Admin credentials for the AAD Connect Server
+        [Parameter(Mandatory = $false)]
         [pscredential]
         $Creds
     )
@@ -22,8 +30,8 @@ function Get-WHFBADSyncNGCProp {
             $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
             $ADSyncConnector.AttributeInclusionList -contains "msDS-KeyCredentialLink"
         } -Credential $cred
-    } else
-    {
+    }
+    else {
         $ADSyncConnector = Get-ADSyncConnector | Where-Object { $_.type -eq "AD" }
         $MSKeyCredExists = $ADSyncConnector.AttributeInclusionList -contains "msDS-KeyCredentialLink"
     }
