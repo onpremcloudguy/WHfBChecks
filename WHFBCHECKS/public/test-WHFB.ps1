@@ -50,7 +50,7 @@ function Test-WHFB {
         Install-Module Invoke-CommandAs -scope CurrentUser
     }
     if (!(get-module -ListAvailable MSOnline)) {
-        Write-Host "Installing MSOnline module to Allow interigation of AADConnect Settings" -ForegroundColor Green
+        Write-Host "Installing MSOnline module to Allow integration of AADConnect Settings" -ForegroundColor Green
         install-module MSOnline
     }
     import-module MSOnline
