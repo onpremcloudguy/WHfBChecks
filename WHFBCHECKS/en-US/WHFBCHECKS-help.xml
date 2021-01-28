@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Test-WHFB</command:name>
+      <command:verb>Test</command:verb>
+      <command:noun>WHFB</command:noun>
+      <maml:description>
+        <maml:para>This function allows for you to interrogate your identity platform to validate if it is ready to enable Windows Hello for Business (WHFB) - Hybrid Key-Trust method</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>This function will reach out to:</maml:para>
+      <maml:para>- Active Directory, and obtain the following:  
+  - Directory Schema version  
+  - Domain and Forest functional level  
+  - List of Domain Controllers, on each we check:  
+    - Operating System Version  
+    - Certificate  
+      - Issuing Certificate Template  
+      - CRLDP address  
+      - SAN address  
+      - Encryption provider  
+  - Member of Key Admins group  
+  - Registered Certificate Authorities  
+  - All Certificate Templates that meet the requirements for WHFB</maml:para>
+      <maml:para>- Azure Active Directory, and obtain the following:  
+  - AAD Connect Server Name  
+  - AAD Connect Sync status  
+  - AAD Connect last sync time</maml:para>
+      <maml:para>- Azure Active Directory Connect, and obtain the following:  
+  - AAD Connect Version  
+  - AAD Connect AD Sync Account  
+  - AAD Connect Schema check for "msDS-KeyCredentialLink" and if it is Syncing</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Test-WHFB</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>Creds</maml:name>
+          <maml:description>
+            <maml:para>An admin account that has access to Domain Controllers, AAD Connect Server, and Certificate Authority</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>Creds</maml:name>
+        <maml:description>
+          <maml:para>An admin account that has access to Domain Controllers, AAD Connect Server, and Certificate Authority</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+        <dev:type>
+          <maml:name>PSCredential</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Test-WHFB -Creds (Get-Credential)</dev:code>
+        <dev:remarks>
+          <maml:para>Will run the Test function using credentials captured from the Get-Credential cmdlet</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+</helpItems>
