@@ -11,7 +11,7 @@ function get-WHFBCA {
     if ($ca.Children.cn.count -gt 1) {
         $res = [System.Collections.ArrayList]::new()
         foreach ($c in $ca) {
-            $CASvr = get-adcomputer $c.cn -properties *
+            $CASvr = get-adcomputer $c.cn.ToString() -properties *
             $caa = [PSCustomObject]@{
                 Name    = $c.cn
                 CAName  = $c.children.cn[0]
