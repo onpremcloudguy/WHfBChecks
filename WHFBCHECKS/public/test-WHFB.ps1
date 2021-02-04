@@ -183,7 +183,7 @@ function Test-WHFB {
             else {
                 Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is:" -ResultState Pass -ResultMessage "Valid"
             }
-            $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
+            $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).IP4address
             if ($CACRLLocation.protocol -ne "Local") {
                 Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally on IP $($CACRLLocation.IPAddress), should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
             }
