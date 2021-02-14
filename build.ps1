@@ -63,6 +63,8 @@ $($previousVersion.releaseNotes)
         ReleaseNotes      = $releaseNotes
     }
     Update-ModuleManifest @Manifest
+    Add-Type -assembly "system.io.compression.filesystem"
+    [io.compression.zipfile]::CreateFromDirectory($relpath, "$relpath\module.zip") 
 }
 catch {
     $_
