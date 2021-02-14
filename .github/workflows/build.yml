@@ -33,11 +33,28 @@ jobs:
           # PowerShell script to execute in Actions-hydrated context
           script: .\build.ps1
           
-      - name: Release & Publish
+      - name: Upload To Github Release
         # You may pin to the exact commit or the version.
-        # uses: zattoo/publish@d93e4a2dbc3188a94773578e40c9432a49a37dc8
-        uses: zattoo/publish@1.0.0
+        # uses: xresloader/upload-to-github-release@3ad14478ee4fb9bd65e84c6d496a7d6862892f43
+        uses: xresloader/upload-to-github-release@v1.2.2
         with:
-          # GitHub Token
-          github_token: ${{github.token}}
-         
+          # The files or file patterns to upload. You can upload multiple files by split them by semicolon. You can use the glob pattern to find the files.
+          file: module.zip # default is 
+          # The files or file patterns to delete before uploading new files. You can delete multiple files by split them by semicolon. You can use the glob pattern to find the files.
+          #delete_file: # optional, default is 
+          # If you need to overwrite existing files, add overwrite: true to the with.
+          overwrite: true # optional, default is false
+          # The resultant deployment is a draft Release that only repository collaborators can see. This gives you an opportunity to examine and edit the draft release.
+          #draft: # optional, default is true
+          # The resultant deployment is a Prerelease. This gives you an opportunity to examine and edit the prerelease.
+          prerelease: true # optional, default is false
+          # With tags: true, your Releases deployment will trigger if and only if the build is a tagged build.
+          #tags: # optional, default is false
+          # Only work on these branches(splited by semicolon), set to nothing to accept all branches.
+          #branches: # optional, default is 
+          # With verbose: true, be verbose.
+          verbose: true # optional, default is false
+          # Set custom tag name.
+          #tag_name: # optional, default is 
+          # If try to update latest release.
+          #update_latest_release: # optional, default is false
