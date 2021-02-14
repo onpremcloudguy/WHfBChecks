@@ -32,3 +32,12 @@ jobs:
         with:
           # PowerShell script to execute in Actions-hydrated context
           script: .\build.ps1
+          
+      - name: Release & Publish
+        # You may pin to the exact commit or the version.
+        # uses: zattoo/publish@d93e4a2dbc3188a94773578e40c9432a49a37dc8
+        uses: zattoo/publish@1.0.0
+        with:
+          # GitHub Token
+          github_token: ${{github.token}}
+         
