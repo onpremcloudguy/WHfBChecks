@@ -69,8 +69,14 @@ function Test-WHFB {
             Write-FormattedHost -Message "AD Domain Controller $($dc.hostname):" -ResultState Fail -ResultMessage "Not supported, ALL Domain Contollers must be 2016 or Higher" -AdditionalInfo "More information here: https://docs.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/hello-adequate-domain-controllers`n`rHowTo: https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/upgrade-domain-controllers"
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $cred
-        if ($DCCert) {
-            $DCCerts.add($DCCert)
+        if ($dccert.count -eq 1) {
+            $DCCerts.add($dccert)
+        }
+        elseif ($DCCert.count -gt 1) {
+            foreach ($DCC in $dccert)
+            { 
+                $DCCerts.add($DCC) 
+            }
         }
     }
     #endregion
