@@ -70,7 +70,7 @@ function Test-WHFB {
         }
         $DCCert = Get-WHFBADDCCerts -ComputerName $dc.hostname -Creds $cred
         if ($dccert.count -eq 1) {
-            $DCCerts.add($dccert)
+            $DCCerts.add($dccert) | Out-Null
         }
         elseif ($DCCert.count -gt 1) {
             foreach ($DCC in $dccert)
