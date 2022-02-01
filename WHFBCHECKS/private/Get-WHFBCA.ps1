@@ -11,23 +11,31 @@ function get-WHFBCA {
     if ($ca.Children.cn.count -gt 1) {
         $res = [System.Collections.ArrayList]::new()
         foreach ($c in $ca) {
-            $CASvr = get-adcomputer $c.cn.ToString() -properties *
-            $caa = [PSCustomObject]@{
-                Name    = $c.cn
-                CAName  = $c.children.cn[0]
-                OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
+            try {
+                $CASvr = get-adcomputer $c.cn.ToString() -properties *
+                $caa = [PSCustomObject]@{
+                    Name    = $c.cn
+                    CAName  = $c.children.cn[0]
+                    OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
+                }
+                $res.Add($caa) | out-null
             }
-            $res.Add($caa) | out-null
+            catch {
+            }
         }
     }
     elseif ($ca.Children.cn.count -eq 1) {
-        $CASvr = get-adcomputer $ca.cn -properties *
-        $caa = [PSCustomObject]@{
-            Name    = $ca.cn
-            CAName  = $ca.children.cn[0]
-            OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
+        try {
+            $CASvr = get-adcomputer $ca.cn -properties *
+            $caa = [PSCustomObject]@{
+                Name    = $ca.cn
+                CAName  = $ca.children.cn[0]
+                OSVer   = [decimal]$CASvr.OperatingSystemVersion.split(' ')[0]
+            }
+            $res = $caa
         }
-        $res = $caa
+        catch {
+        }
     }
     return $res
 }
