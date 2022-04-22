@@ -175,9 +175,10 @@ function Test-WHFB {
         }
         else {
             foreach ($CertCRLDP in $CertCRLDPs) {
-                if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
-                    $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
-                }
+                $CRLServername = $CertCRLDP.Split('/')[2]
+                #if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
+                #    $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
+                #}
                 Write-FormattedHost -Message "CA KDC cert on Domain Controller $($DCCerts.PSComputerName) HTTP CRL is:" -ResultState Pass -ResultMessage $CertCRLDP
                 $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
                 if ($CACRLValid.CAName -ne $ca.CAName) {
@@ -192,9 +193,9 @@ function Test-WHFB {
                 else {
                     Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is:" -ResultState Pass -ResultMessage "Valid"
                 }
-                $serverfqdn = $certcrldp.Split('/')[2]
-                $externaladdress = Resolve-DnsName $serverfqdn -Server "1.1.1.1" -ErrorAction SilentlyContinue
-                if ($externaladdress.address -notcontains '.') {
+                #$CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
+                $CACRLLocation = resolve-dnsname $CRLServername -Server "1.1.1.1" -ErrorAction SilentlyContinue
+                if (!$CACRLLocation) {
                     Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally, should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
                 }
                 else {
@@ -251,9 +252,10 @@ function Test-WHFB {
             }
             else {
                 foreach ($CertCRLDP in $CertCRLDPs) {
-                    if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
-                        $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
-                    }
+                    $CRLServername = $CertCRLDP.Split('/')[2]
+                    #if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
+                    #    $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
+                    #}
                     Write-FormattedHost -Message "CA KDC cert on Domain Controller $($DCC.PSComputerName) HTTP CRL is:" -ResultState Pass -ResultMessage $CertCRLDP
                     $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
                     if ($CACRLValid.CAName -ne $ca.CAName) {
@@ -268,9 +270,10 @@ function Test-WHFB {
                     else {
                         Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is:" -ResultState Pass -ResultMessage "Valid"
                     }
-                    $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
-                    if ($CACRLLocation.protocol -ne "Local") {
-                        Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally on IP $($CACRLLocation.IPAddress), should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
+                    #$CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).address
+                    $CACRLLocation = resolve-dnsname $CRLServername -Server "1.1.1.1" -ErrorAction SilentlyContinue
+                    if (!$CACRLLocation) {
+                        Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally, should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
                     }
                     else {
                         Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCC.PSComputerName) is located:" -ResultState Pass -ResultMessage "Externally"
