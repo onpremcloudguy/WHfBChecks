@@ -73,8 +73,7 @@ function Test-WHFB {
             $DCCerts.add($dccert) | Out-Null
         }
         elseif ($DCCert.count -gt 1) {
-            foreach ($DCC in $dccert)
-            { 
+            foreach ($DCC in $dccert) { 
                 $DCCerts.add($DCC) 
             }
         }
@@ -193,9 +192,10 @@ function Test-WHFB {
                 else {
                     Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is:" -ResultState Pass -ResultMessage "Valid"
                 }
-                $CACRLLocation = find-netroute -remoteipaddress (resolve-dnsname $certcrldp.split(":")[1].substring(2).split('/')[0] -Type A).IP4address
-                if ($CACRLLocation.protocol -ne "Local") {
-                    Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally on IP $($CACRLLocation.IPAddress), should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
+                $serverfqdn = $certcrldp.Split('/')[2]
+                $externaladdress = Resolve-DnsName $serverfqdn -Server "1.1.1.1" -ErrorAction SilentlyContinue
+                if ($externaladdress.address -notcontains '.') {
+                    Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located:" -ResultState Fail -ResultMessage "Internally, should be external" -AdditionalInfo "More information here: https://docs.microsoft.com/windows/security/identity-protection/hello-for-business/hello-hybrid-aadj-sso-base#crl-distribution-point-cdp"
                 }
                 else {
                     Write-FormattedHost -Message "CA KDC Cert CRL on Domain Controller $($DCCerts.PSComputerName) is located:" -ResultState Pass -ResultMessage "Externally"
