@@ -253,9 +253,9 @@ function Test-WHFB {
             else {
                 foreach ($CertCRLDP in $CertCRLDPs) {
                     $CRLServername = $CertCRLDP.Split('/')[2]
-                    #if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
-                    #    $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
-                    #}
+                    if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
+                        $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
+                    }
                     Write-FormattedHost -Message "CA KDC cert on Domain Controller $($DCC.PSComputerName) HTTP CRL is:" -ResultState Pass -ResultMessage $CertCRLDP
                     $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
                     if ($CACRLValid.CAName -ne $ca.CAName) {
