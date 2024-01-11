@@ -28,13 +28,13 @@ function Test-WHFB {
     add-type -path "$($module.ModuleBase)\Microsoft.IdentityModel.Clients.ActiveDirectory.dll"
     $AuthSessions = [Microsoft.IdentityModel.Clients.ActiveDirectory.TokenCache]::DefaultShared.ReadItems()
     $authed = $false
-    foreach ($AuthSession in $AuthSessions) {
-        if ($AuthSession.clientid -eq "1b730954-1685-4b74-9bfd-dac224a7b894") {
-            if ($AuthSession.expireson -gt (Get-Date)) {
-                $authed = $true
-            }
-        }
-    }
+    #foreach ($AuthSession in $AuthSessions) {
+    #    if ($AuthSession.clientid -eq "1b730954-1685-4b74-9bfd-dac224a7b894") {
+    #        if ($AuthSession.expireson -gt (Get-Date)) {
+    #            $authed = $true
+    #        }
+    #    }
+    #}
     if (!$authed) {
         Connect-MsolService
     }
@@ -254,7 +254,7 @@ function Test-WHFB {
                 foreach ($CertCRLDP in $CertCRLDPs) {
                     $CRLServername = $CertCRLDP.Split('/')[2]
                     if ( ($CertCRLDP.Contains("(")) -and ($CertCRLDP.Contains(")")) ) {
-                        $CertCRLDP = ($CertCRLDP.Substring(($CertCRLDP.IndexOf("(") + 1))).TrimEnd(")")
+                        $CertCRLDP = ($CertCRLDP.Substring(0,($CertCRLDP.IndexOf("(")))).TrimEnd(")") + ".crl"
                     }
                     Write-FormattedHost -Message "CA KDC cert on Domain Controller $($DCC.PSComputerName) HTTP CRL is:" -ResultState Pass -ResultMessage $CertCRLDP
                     $CACRLValid = Get-WHFBCACRLValid -crl (Invoke-WebRequest -Uri $CertCRLDP -UseBasicParsing).content
